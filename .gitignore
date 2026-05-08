@@ -1,0 +1,42 @@
+# Laravel - Dossiers et fichiers système
+/vendor/
+node_modules/
+public/storage
+public/hot
+storage/*.key
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+
+# Laravel - Fichiers de configuration sensibles
+.env
+.env.backup
+.env.production
+
+# React / Frontend
+/public/build
+dist/
+.eslintcache
+
+# Logs et Caches
+storage/logs/*.log
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*.php
+.cache/
+
+# Divers
+.DS_Store
+Thumbs.db
+# Ignorer les dépendances dans le dossier backend
+backend/vendor/
+backend/node_modules/
+backend/.env
+backend/storage/*.php
+backend/storage/framework/
+
+# Ignorer les dépendances dans le dossier frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
