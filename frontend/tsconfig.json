@@ -15,8 +15,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-   // "ignoreDeprecations": "6.0",
+    
+    // 1. On supprime "baseUrl": "."
+    
+    // 2. On définit les paths relativement au dossier racine
     "paths": {
       "@/*": ["./src/*"]
     }
