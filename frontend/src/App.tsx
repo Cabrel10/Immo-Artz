@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { Footer } from '@/components/Footer'
+import { FloatingWhatsApp } from '@/components/FloatingWhatsApp'
 import { HomePage } from '@/pages/HomePage'
 import { PropertiesPage } from '@/pages/PropertiesPage'
 import { PropertyDetailPage } from '@/pages/PropertyDetailPage'
@@ -43,6 +44,7 @@ function App() {
         </main>
         
         <Footer />
+        <FloatingWhatsApp />
       </div>
     </div>
   )

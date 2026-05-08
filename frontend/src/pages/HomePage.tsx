@@ -4,16 +4,27 @@ import { Button } from '@/components/ui/Button'
 import { PropertyCard } from '@/components/PropertyCard'
 import { useFeaturedProperties } from '@/hooks/useProperties'
 import { useState } from 'react'
+import { PROPERTY_TYPES, PROPERTY_STANDINGS } from '@/types'
 
 export function HomePage() {
   const navigate = useNavigate()
   const { properties: featuredProperties, isLoading } = useFeaturedProperties(6)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedType, setSelectedType] = useState('')
+  const [selectedStanding, setSelectedStanding] = useState('')
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (searchQuery.trim()) {
-      navigate(`/properties?search=${encodeURIComponent(searchQuery)}`)
+    const params = new URLSearchParams()
+    
+    if (searchQuery.trim()) params.append('search', searchQuery.trim())
+    if (selectedType) params.append('type', selectedType)
+    if (selectedStanding) params.append('standing', selectedStanding)
+    
+    if (Array.from(params).length > 0) {
+      navigate(`/properties?${params.toString()}`)
+    } else {
+      navigate('/properties')
     }
   }
 
@@ -64,9 +75,9 @@ export function HomePage() {
             </p>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearch} className="mx-auto mt-10 max-w-2xl">
-              <div className="flex gap-2 rounded-xl bg-white/10 p-2 backdrop-blur-sm">
-                <div className="flex-1 relative">
+            <form onSubmit={handleSearch} className="mx-auto mt-10 max-w-5xl">
+              <div className="flex flex-col md:flex-row gap-2 rounded-xl bg-white/10 p-2 backdrop-blur-sm">
+                <div className="flex-[2] relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <input
                     type="text"
@@ -76,7 +87,27 @@ export function HomePage() {
                     className="w-full rounded-lg bg-white px-10 py-3 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-immo-500"
                   />
                 </div>
-                <Button type="submit" size="lg" leftIcon={<Search className="h-5 w-5" />}>
+                <select
+                  value={selectedType}
+                  onChange={(e) => setSelectedType(e.target.value)}
+                  className="flex-1 rounded-lg bg-white px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-immo-500"
+                >
+                  <option value="">Tous les types</option>
+                  {Object.entries(PROPERTY_TYPES).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <select
+                  value={selectedStanding}
+                  onChange={(e) => setSelectedStanding(e.target.value)}
+                  className="flex-1 rounded-lg bg-white px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-immo-500"
+                >
+                  <option value="">Tous les standings</option>
+                  {Object.entries(PROPERTY_STANDINGS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <Button type="submit" size="lg" className="w-full md:w-auto shrink-0" leftIcon={<Search className="h-5 w-5" />}>
                   Rechercher
                 </Button>
               </div>
