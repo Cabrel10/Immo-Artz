@@ -1,0 +1,10 @@
+# Configuration Render pour Frontend
+# À mettre dans le dossier frontend/ si déploiement séparé
+
+apiVersion: 1
+services:
+  - type: static_site
+    name: immo-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: false

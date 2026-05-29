@@ -1,0 +1,127 @@
+services:
+  # ============================================
+  # BASE DE DONNÉES PostgreSQL
+  # ============================================
+  - type: pgsql
+    name: immo-db
+    plan: free
+    region: oregon
+    databaseName: immo_db
+    user: immo_user
+    envVarPrefix: DATABASE
+    # Auto-backup: non disponible en plan free
+    # Mais les données sont persistantes
+
+  # ============================================
+  # BACKEND LARAVEL
+  # ============================================
+  - type: web
+    name: immo-backend
+    runtime: php
+    plan: free
+    region: oregon
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php artisan migrate --force
+      php artisan key:generate
+    startCommand: php-fpm
+    preDeployCommand: |
+      php artisan migrate --force --seed
+    routes:
+      - path: /api/*
+        destination: /index.php
+    # Disque Persistant pour les uploads
+    disk:
+      name: immo-storage
+      mountPath: /app/backend/storage
+      sizeGB: 1  # 1 GB gratuit suffit pour MVP
+    
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        fromService:
+          type: web
+          name: immo-backend
+          property: url
+      - key: FRONTEND_URL
+        fromService:
+          type: static_site
+          name: immo-frontend
+          property: url
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromService:
+          type: pgsql
+          name: immo-db
+          property: host
+      - key: DB_PORT
+        value: 5432
+      - key: DB_DATABASE
+        fromService:
+          type: pgsql
+          name: immo-db
+          property: database
+      - key: DB_USERNAME
+        fromService:
+          type: pgsql
+          name: immo-db
+          property: user
+      - key: DB_PASSWORD
+        fromService:
+          type: pgsql
+          name: immo-db
+          property: password
+      - key: CACHE_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SESSION_DRIVER
+        value: file
+      - key: LOG_CHANNEL
+        value: stack
+      - key: SANCTUM_STATEFUL_DOMAINS
+        fromService:
+          type: web
+          name: immo-backend
+          property: url
+      - key: SANCTUM_ENCRYPT_COOKIES
+        value: "false"
+      - key: SESSION_DOMAIN
+        fromService:
+          type: web
+          name: immo-backend
+          property: url
+      - key: TELESCOPE_ENABLED
+        value: false
+
+  # ============================================
+  # FRONTEND REACT/VITE
+  # ============================================
+  - type: static_site
+    name: immo-frontend
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: immo-backend
+          property: url
+        value: /api
+    routes:
+      - path: "/*"
+        destination: /index.html
+        # SPA : Toutes les routes → index.html
+
+# ============================================
+# VARIABLES GLOBALES
+# ============================================
+environment:
+  NODE_VERSION: 22.0.0
+  PHP_VERSION: 8.2
