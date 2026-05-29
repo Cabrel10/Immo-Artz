@@ -1,0 +1,8 @@
+{
+  "config": {
+    "cache-dir": "$APPDATA/Composer/cache",
+    "cache-vcs-dir": "$APPDATA/Composer/vcs-cache",
+    "cache-repo-dir": "$APPDATA/Composer/repo-cache",
+    "vendor-dir": "vendor"
+  }
+}

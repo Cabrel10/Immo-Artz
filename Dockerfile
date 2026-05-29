@@ -10,7 +10,10 @@ WORKDIR /app/frontend
 
 # Copier les fichiers de dépendances
 COPY frontend/package*.json ./
-RUN npm ci
+COPY frontend/.npmrc ./
+
+# Installer avec cache optimisé
+RUN npm ci --prefer-offline --no-audit
 
 # Copier le code source et builder
 COPY frontend/ ./
@@ -52,7 +55,13 @@ WORKDIR /app/backend
 
 # Copier les fichiers de dépendances
 COPY backend/composer*.json ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Installer avec cache optimisé
+# Note: Le cache Composer est local au host (~/.composer-cache)
+RUN COMPOSER_CACHE_DIR=/tmp/composer-cache composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction
 
 # Copier le code source
 COPY backend/ ./
