@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Lock, Unlock, Download, Eye, Clock, Users, AlertCircle, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Modal } from '@/components/ui/Modal'
+import { PaymentModal } from '@/components/PaymentModal'
 import { catalogService } from '@/services/api'
 import type { CatalogAccess } from '@/types'
 
@@ -20,16 +20,17 @@ export function CatalogPage() {
 
     try {
       const response = await catalogService.verifyPassword(password)
-      if (response.data.success) {
+      if (response.data.success && response.data.data) {
         setAccess(response.data.data)
       } else {
         setError(response.data.message || 'Mot de passe invalide')
       }
-    } catch (err: any) {
-      if (err.response?.data?.error_code === 'RATE_LIMITED') {
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string; error_code?: string } } }
+      if (axiosError.response?.data?.error_code === 'RATE_LIMITED') {
         setError('Trop de tentatives. Veuillez réessayer dans une heure.')
       } else {
-        setError(err.response?.data?.message || 'Erreur de vérification')
+        setError(axiosError.response?.data?.message || 'Erreur de vérification')
       }
     } finally {
       setIsVerifying(false)
@@ -50,7 +51,7 @@ export function CatalogPage() {
       link.click()
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
-    } catch (err) {
+    } catch {
       setError('Erreur lors du téléchargement')
     }
   }
@@ -244,38 +245,19 @@ export function CatalogPage() {
         </div>
       </div>
 
-      {/* Payment Modal */}
-      <Modal
+      {/* Payment Modal - Mobile Money */}
+      <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        title="Paiement"
-        description="Choisissez votre méthode de paiement"
-        footer={
-          <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
-            Annuler
-          </Button>
-        }
-      >
-        <div className="space-y-4">
-          <p className="text-gray-600 dark:text-gray-400">
-            Le paiement sera implémenté avec l'intégration de :
-          </p>
-          <ul className="space-y-2">
-            <li className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-              <span className="font-medium">MTN Mobile Money</span>
-            </li>
-            <li className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-              <span className="font-medium">Orange Money</span>
-            </li>
-            <li className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-              <span className="font-medium">Carte bancaire</span>
-            </li>
-          </ul>
-          <p className="text-sm text-gray-500">
-            Cette fonctionnalité nécessite l'intégration d'une passerelle de paiement locale.
-          </p>
-        </div>
-      </Modal>
+        onSuccess={(pwd) => {
+          setPassword(pwd)
+          setShowPaymentModal(false)
+          // Auto-verify with the received password
+          catalogService.verifyPassword(pwd)
+            .then((r) => { if (r.data.success) setAccess(r.data.data ?? null) })
+            .catch(() => {})
+        }}
+      />
     </div>
   )
 }

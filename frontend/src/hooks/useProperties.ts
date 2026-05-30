@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api } from '@/services/api'
-import type { Property, PropertyFilters, PaginatedResponse, ApiResponse } from '@/types'
+import type { Property, PropertyFilters, ApiResponse } from '@/types'
 
 export function useProperties(initialFilters?: PropertyFilters) {
   const [properties, setProperties] = useState<Property[]>([])
@@ -45,8 +45,9 @@ export function useProperties(initialFilters?: PropertyFilters) {
       } else {
         setError(response.data.message || 'Erreur lors du chargement')
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Erreur de connexion')
+    } catch (err: unknown) {
+      const axiosError = err as { response?: { data?: { message?: string } } }
+      setError(axiosError.response?.data?.message || 'Erreur de connexion')
     } finally {
       setIsLoading(false)
     }
@@ -97,8 +98,9 @@ export function useProperty(id: number | string | undefined) {
         } else {
           setError(response.data.message || 'Propriété non trouvée')
         }
-      } catch (err: any) {
-        setError(err.response?.data?.message || 'Erreur de connexion')
+      } catch (err: unknown) {
+        const axiosError = err as { response?: { data?: { message?: string } } }
+        setError(axiosError.response?.data?.message || 'Erreur de connexion')
       } finally {
         setIsLoading(false)
       }

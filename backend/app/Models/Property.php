@@ -42,6 +42,8 @@ class Property extends Model
         'status',
         'is_featured',
         'is_premium',
+        'featured_order',
+        'featured_until',
         'published_at',
         'expires_at',
         'view_count',
@@ -57,6 +59,7 @@ class Property extends Model
         'longitude' => 'decimal:8',
         'is_featured' => 'boolean',
         'is_premium' => 'boolean',
+        'featured_until' => 'datetime',
         'published_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
@@ -142,14 +145,36 @@ class Property extends Model
         return $query->where('is_premium', true);
     }
 
+    /**
+     * Tri par standing — Cross-DB compatible (MySQL + PostgreSQL + SQLite).
+     * Utilise CASE WHEN au lieu de FIELD() (spécifique MySQL).
+     */
     public function scopeOrderByStanding($query)
     {
-        return $query->orderByRaw("FIELD(standing, 'haut_de_gamme', 'moyen', 'standard')");
+        return $query->orderByRaw(
+            "CASE standing WHEN 'haut_de_gamme' THEN 1 WHEN 'moyen' THEN 2 WHEN 'standard' THEN 3 ELSE 4 END"
+        );
     }
 
+    /**
+     * Recherche par proximité géographique — Cross-DB compatible.
+     * Formule de Haversine implémentée en SQL standard (fonctionne MySQL/PostgreSQL/SQLite si extensions math chargées).
+     * En SQLite (tests), on rapatrie le filtrage en PHP via le scope alternatif.
+     */
     public function scopeNearby($query, float $lat, float $lng, float $radius = 10)
     {
-        // Rayon en kilomètres (formule Haversine simplifiée)
+        $driver = $query->getQuery()->getConnection()->getDriverName();
+
+        // SQLite (tests) : pas de cos/sin natifs — approximation par bounding-box
+        if ($driver === 'sqlite') {
+            $latDelta = $radius / 111.0; // ~111 km par degré
+            $lngDelta = $radius / (111.0 * max(cos(deg2rad($lat)), 0.01));
+            return $query
+                ->whereBetween('latitude', [$lat - $latDelta, $lat + $latDelta])
+                ->whereBetween('longitude', [$lng - $lngDelta, $lng + $lngDelta]);
+        }
+
+        // MySQL & PostgreSQL : Haversine SQL standard
         return $query->whereRaw(
             "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) <= ?",
             [$lat, $lng, $lat, $radius]
