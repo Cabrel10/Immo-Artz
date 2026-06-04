@@ -1,7 +1,7 @@
 FROM php:8.2-cli
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git curl zip unzip libpng-dev libjpeg62-turbo-dev \
     libfreetype6-dev libzip-dev libonig-dev libxml2-dev \
     libpq-dev sqlite3 libsqlite3-dev \
@@ -16,28 +16,32 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Copy composer files first for cache
+# Copy composer files first for Docker layer cache
 COPY composer.json composer.lock ./
+
+# Install dependencies (no-scripts to avoid artisan calls without APP_KEY)
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
-# Copy application
+# Copy full application source
 COPY . .
 
-# Run post-install scripts
-RUN composer dump-autoload --optimize
-
-# Create storage and database directories
+# Create required directories and set permissions
 RUN mkdir -p storage/framework/{cache,sessions,views} \
     && mkdir -p storage/logs \
     && mkdir -p storage/app/public \
     && mkdir -p bootstrap/cache \
     && mkdir -p database \
     && touch database/database.sqlite \
-    && chmod -R 775 storage bootstrap/cache database
+    && chmod -R 777 storage bootstrap/cache database
 
-# Generate app key if not set
-RUN php artisan package:discover --ansi || true
+# Dump autoload with full class map
+RUN composer dump-autoload --optimize --no-scripts
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+# At runtime: generate cache, run migrations, then serve
+CMD sh -c "\
+    php artisan package:discover --ansi 2>/dev/null || true && \
+    php artisan config:clear && \
+    php artisan migrate --force && \
+    php artisan serve --host=0.0.0.0 --port=\${PORT:-8000}"
