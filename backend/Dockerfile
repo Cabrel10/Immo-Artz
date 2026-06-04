@@ -26,11 +26,14 @@ COPY . .
 # Run post-install scripts
 RUN composer dump-autoload --optimize
 
-# Create storage directories
+# Create storage and database directories
 RUN mkdir -p storage/framework/{cache,sessions,views} \
     && mkdir -p storage/logs \
+    && mkdir -p storage/app/public \
     && mkdir -p bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && mkdir -p database \
+    && touch database/database.sqlite \
+    && chmod -R 775 storage bootstrap/cache database
 
 # Generate app key if not set
 RUN php artisan package:discover --ansi || true
