@@ -60,6 +60,10 @@ auth.json
 Homestead.json
 Homestead.yaml
 .phpstorm.metadata.php
+backend/.phpunit.cache/
+backend/database/database.sqlite
+backend/storage/
+backend/bootstrap/cache/*.php
 
 # ============================================
 # DÉVELOPPEMENT LOCAL

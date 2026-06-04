@@ -127,7 +127,7 @@ class PaymentController extends Controller
 
         // En sandbox/fake : auto-completion après 5 secondes
         if ($this->driver() === 'fake' && $payment->status === 'pending') {
-            $createdAgo = now()->diffInSeconds($payment->created_at);
+            $createdAgo = now()->diffInSeconds($payment->created_at, absolute: true);
             if ($createdAgo >= 5) {
                 $payment->markAsCompleted('FAKE-' . Str::upper(Str::random(10)));
             }

@@ -17,12 +17,12 @@ class FavoriteTest extends TestCase
     {
         $agent = User::create([
             'first_name' => 'A', 'last_name' => 'g',
-            'email' => 'a@immo.cm', 'password' => Hash::make('x'),
+            'email' => 'agentfav@immo.cm', 'password' => Hash::make('x'),
             'role' => 'agent', 'status' => 'active',
         ]);
         $visitor = User::create([
             'first_name' => 'V', 'last_name' => 'v',
-            'email' => 'v@immo.cm', 'password' => Hash::make('x'),
+            'email' => 'visitorfav@immo.cm', 'password' => Hash::make('x'),
             'role' => 'visitor', 'status' => 'active',
         ]);
         $p = Property::create([
@@ -62,6 +62,29 @@ class FavoriteTest extends TestCase
         Sanctum::actingAs($visitor);
 
         $this->postJson("/api/v1/favorites/{$p->id}")->assertStatus(201);
-        $this->postJson("/api/v1/favorites/{$p->id}")->assertStatus(200); // ré-ajout = 200
+        $this->postJson("/api/v1/favorites/{$p->id}")->assertStatus(200); // re-add = 200
+    }
+
+    public function test_favorite_list_returns_properties(): void
+    {
+        [$visitor, $p] = $this->setupVisitorAndProperty();
+        Sanctum::actingAs($visitor);
+
+        $this->postJson("/api/v1/favorites/{$p->id}")->assertStatus(201);
+        $this->getJson('/api/v1/favorites')
+            ->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonStructure(['data' => ['favorites', 'pagination']]);
+    }
+
+    public function test_favorite_ids_returns_array(): void
+    {
+        [$visitor, $p] = $this->setupVisitorAndProperty();
+        Sanctum::actingAs($visitor);
+
+        $this->postJson("/api/v1/favorites/{$p->id}")->assertStatus(201);
+        $response = $this->getJson('/api/v1/favorites/ids');
+        $response->assertStatus(200);
+        $this->assertContains($p->id, $response->json('data.ids'));
     }
 }
