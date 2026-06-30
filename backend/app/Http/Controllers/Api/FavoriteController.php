@@ -164,7 +164,6 @@ class FavoriteController extends Controller
             ] : null,
         ];
     }
-}
 
     /**
      * Ajouter un bien aux favoris depuis le body (POST /api/v1/favorites avec property_id).
@@ -182,3 +181,4 @@ class FavoriteController extends Controller
 
         return $this->store($request, (int) $propertyId);
     }
+}
