@@ -220,3 +220,20 @@ class ContactRequestController extends Controller
         return $user->isAdmin() || $contact->agent_id === $user->id;
     }
 }
+
+    /**
+     * Soumettre une demande de contact depuis le body (POST /api/v1/contact-requests avec property_id).
+     */
+    public function storeFromBody(Request $request): JsonResponse
+    {
+        $propertyId = $request->input('property_id');
+        
+        if (!$propertyId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'property_id requis.',
+            ], 422);
+        }
+
+        return $this->store($request, (int) $propertyId);
+    }

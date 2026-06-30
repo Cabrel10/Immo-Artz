@@ -165,3 +165,20 @@ class FavoriteController extends Controller
         ];
     }
 }
+
+    /**
+     * Ajouter un bien aux favoris depuis le body (POST /api/v1/favorites avec property_id).
+     */
+    public function storeFromBody(Request $request): JsonResponse
+    {
+        $propertyId = $request->input('property_id');
+        
+        if (!$propertyId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'property_id requis.',
+            ], 422);
+        }
+
+        return $this->store($request, (int) $propertyId);
+    }

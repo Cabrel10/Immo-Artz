@@ -93,7 +93,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Favoris
     Route::get('/favorites', [FavoriteController::class, 'index']);
-    Route::post('/favorites', [FavoriteController::class, 'store']); // POST /favorites with property_id in body
+    Route::post('/favorites', [FavoriteController::class, 'storeFromBody']); // POST /favorites with property_id in body
     Route::get('/favorites/ids', [FavoriteController::class, 'ids']);
     Route::get('/favorites/{propertyId}/check', [FavoriteController::class, 'check'])->whereNumber('propertyId');
     Route::post('/favorites/{propertyId}', [FavoriteController::class, 'store'])->whereNumber('propertyId');
@@ -101,7 +101,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Demandes de contact (agent : ses messages, admin : tous)
     Route::get('/contact-requests', [ContactRequestController::class, 'index']);
-    Route::post('/contact-requests', [ContactRequestController::class, 'store']); // POST /contact-requests with property_id in body
+    Route::post('/contact-requests', [ContactRequestController::class, 'storeFromBody']); // POST /contact-requests with property_id in body
     Route::post('/contact-requests/{id}/read', [ContactRequestController::class, 'markRead'])->whereNumber('id');
     Route::post('/contact-requests/{id}/replied', [ContactRequestController::class, 'markReplied'])->whereNumber('id');
     Route::delete('/contact-requests/{id}', [ContactRequestController::class, 'destroy'])->whereNumber('id');
