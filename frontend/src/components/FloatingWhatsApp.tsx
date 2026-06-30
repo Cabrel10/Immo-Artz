@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { MessageCircle, X } from 'lucide-react'
 
 const WHATSAPP_NUMBERS = [
-  { label: 'Support Commercial', number: '+237670000001' },
-  { label: 'Service Client', number: '+237670000002' },
+  { label: 'Support Commercial', number: '+237676416878' },
+  { label: 'Service Client', number: '+237691929077' },
 ]
 
 export function FloatingWhatsApp() {
