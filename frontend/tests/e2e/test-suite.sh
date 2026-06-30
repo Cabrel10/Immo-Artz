@@ -148,7 +148,7 @@ echo ""
 test_count=$((test_count + 1))
 echo "📋 TEST $test_count: Get Favorites List"
 echo "─────────────────────────────────────────────────────────────────"
-response=$(curl -s -H "Authorization: Bearer $visitor_token" "$API_URL/favorites")
+response=$(curl -s -H "Authorization: Bearer $login_token" "$API_URL/favorites")
 echo "Response: $response"
 if echo "$response" | grep -q '"favorites"'; then
   echo -e "${GREEN}✅ PASSED${NC}"
@@ -164,7 +164,7 @@ test_count=$((test_count + 1))
 echo "📋 TEST $test_count: Add Favorite (with property_id in body)"
 echo "─────────────────────────────────────────────────────────────────"
 response=$(curl -s -X POST \
-  -H "Authorization: Bearer $visitor_token" \
+  -H "Authorization: Bearer $login_token" \
   -H "Content-Type: application/json" \
   "$API_URL/favorites" \
   -d '{"property_id": 1}')
@@ -183,7 +183,7 @@ test_count=$((test_count + 1))
 echo "📋 TEST $test_count: Create Contact Request"
 echo "─────────────────────────────────────────────────────────────────"
 response=$(curl -s -X POST \
-  -H "Authorization: Bearer $visitor_token" \
+  -H "Authorization: Bearer $login_token" \
   -H "Content-Type: application/json" \
   "$API_URL/contact-requests" \
   -d '{"property_id": 1, "message": "Je suis très intéressé"}')
