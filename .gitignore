@@ -1,42 +1,79 @@
-# Laravel - Dossiers et fichiers système
+# ============================================
+# DÉPENDANCES - À NE JAMAIS COMMITER
+# ============================================
 /vendor/
 node_modules/
-public/storage
-public/hot
-storage/*.key
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
+backend/vendor/
+backend/node_modules/
+frontend/node_modules/
+frontend/dist/
+.composer/
 
-# Laravel - Fichiers de configuration sensibles
+# ============================================
+# FICHIERS DE CONFIGURATION SENSIBLES
+# ============================================
 .env
 .env.backup
+.env.local
+.env.*.local
 .env.production
+backend/.env
+frontend/.env
 
-# React / Frontend
-/public/build
-dist/
-.eslintcache
-
-# Logs et Caches
+# ============================================
+# LOGS & CACHES TEMPORAIRES
+# ============================================
 storage/logs/*.log
 storage/framework/cache/data/*
 storage/framework/sessions/*
 storage/framework/views/*.php
 .cache/
+.eslintcache
+.phpunit.result.cache
 
-# Divers
+# ============================================
+# BUILD & ASSETS
+# ============================================
+public/storage
+public/hot
+/public/build
+dist/
+
+# ============================================
+# FICHIERS SYSTÈME
+# ============================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
-# Ignorer les dépendances dans le dossier backend
-backend/vendor/
-backend/node_modules/
-backend/.env
-backend/storage/*.php
-backend/storage/framework/
+*.swp
+*.swo
+*~
 
-# Ignorer les dépendances dans le dossier frontend
-frontend/node_modules/
-frontend/dist/
-frontend/.env
+# ============================================
+# LARAVEL SPÉCIFIQUE
+# ============================================
+auth.json
+Homestead.json
+Homestead.yaml
+.phpstorm.metadata.php
+backend/.phpunit.cache/
+backend/database/database.sqlite
+backend/storage/
+backend/bootstrap/cache/*.php
+
+# ============================================
+# DÉVELOPPEMENT LOCAL
+# ============================================
+.vscode/settings.json
+.idea/
+*.sublime-workspace
+
+# ============================================
+# DOCKER (caches de build)
+# ============================================
+.docker/
+docker/volumes/

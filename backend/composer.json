@@ -63,7 +63,10 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "cache-dir": "~/.composer-cache",
+        "cache-vcs-dir": "~/.composer-vcs-cache",
+        "cache-repo-dir": "~/.composer-repo-cache"
     },
     "minimum-stability": "stable",
     "prefer-stable": true

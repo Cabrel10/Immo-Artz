@@ -10,7 +10,7 @@ export function RegisterPage() {
   const location = useLocation()
   const { register } = useAuth()
   
-  const isAgent = (location.state as any)?.role === 'agent'
+  const isAgent = (location.state as Record<string, string> | null)?.role === 'agent'
   
   const [formData, setFormData] = useState({
     first_name: '',
@@ -40,7 +40,7 @@ export function RegisterPage() {
       return
     }
 
-    const result = await register(formData)
+    const result = await register({ ...formData, role: formData.role as 'agent' | 'visitor' })
     
     if (result.success) {
       navigate('/')

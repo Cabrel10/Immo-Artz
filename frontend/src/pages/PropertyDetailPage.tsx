@@ -5,9 +5,7 @@ import {
   Bath, 
   Square, 
   Car, 
-  Calendar, 
   Share2, 
-  Heart,
   Phone,
   Mail,
   ArrowLeft,
@@ -16,15 +14,17 @@ import {
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Map } from '@/components/Map'
+import { ContactModal } from '@/components/ContactModal'
+import { FavoriteButton } from '@/components/FavoriteButton'
 import { useProperty } from '@/hooks/useProperties'
-import { formatPrice, formatDate } from '@/utils/format'
+import { formatDate } from '@/utils/format'
 import { useState } from 'react'
 
 export function PropertyDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { property, isLoading, error } = useProperty(id)
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false)
+  const [showContactModal, setShowContactModal] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   if (isLoading) {
@@ -113,6 +113,9 @@ export function PropertyDetailPage() {
             {property.standing_label}
           </Badge>
           <Badge variant="primary">{property.transaction_type_label}</Badge>
+        </div>
+        <div className="absolute top-4 right-4">
+          <FavoriteButton propertyId={property.id} />
         </div>
       </div>
 
@@ -278,7 +281,7 @@ export function PropertyDetailPage() {
 
                 <Button
                   className="w-full mt-4"
-                  onClick={() => setIsContactModalOpen(true)}
+                  onClick={() => setShowContactModal(true)}
                 >
                   Envoyer un message
                 </Button>
@@ -324,17 +327,14 @@ export function PropertyDetailPage() {
 
             {/* Actions */}
             <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                leftIcon={<Heart className="h-4 w-4" />}
-              >
-                Favori
-              </Button>
+              <FavoriteButton propertyId={property.id} className="flex-1" />
               <Button
                 variant="outline"
                 className="flex-1"
                 leftIcon={<Share2 className="h-4 w-4" />}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href)
+                }}
               >
                 Partager
               </Button>
@@ -342,6 +342,17 @@ export function PropertyDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Contact Modal */}
+      {property.agent && (
+        <ContactModal
+          isOpen={showContactModal}
+          onClose={() => setShowContactModal(false)}
+          propertyId={property.id}
+          propertyTitle={property.title}
+          agentName={property.agent.name}
+        />
+      )}
     </div>
   )
 }

@@ -180,17 +180,20 @@ class PropertyController extends Controller
         }
 
         $data = $validator->validated();
-        $data['agent_id'] = $user->isAgent() ? $user->id : $request->input('agent_id');
+        $data['agent_id'] = $user->isAgent() ? $user->id : ($request->input('agent_id') ?: $user->id);
 
-        // Gestion des images
+        // Gestion des images : agnostique (local en dev, s3 en prod via FILESYSTEM_DISK)
         if ($request->hasFile('images')) {
-            $images = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('properties', 'public');
-                $images[] = asset('storage/' . $path);
-            }
-            $data['images'] = $images;
-            $data['main_image'] = $images[0] ?? null;
+            $data['images'] = $this->storeUploadedImages($request->file('images'));
+            $data['main_image'] = $data['images'][0] ?? null;
+        }
+
+        // Statut par défaut : draft. L'agent doit explicitement publier.
+        if (empty($data['status'])) {
+            $data['status'] = 'draft';
+        }
+        if ($data['status'] === 'published' && empty($data['published_at'])) {
+            $data['published_at'] = now();
         }
 
         $property = Property::create($data);
@@ -242,20 +245,22 @@ class PropertyController extends Controller
         // Gestion des images
         if ($request->hasFile('images')) {
             // Supprimer les anciennes images
-            if ($property->images) {
-                foreach ($property->images as $oldImage) {
-                    $path = str_replace(asset('storage/'), '', $oldImage);
-                    Storage::disk('public')->delete($path);
-                }
-            }
+            $this->deleteStoredImages($property->images ?? []);
 
-            $images = [];
-            foreach ($request->file('images') as $image) {
-                $path = $image->store('properties', 'public');
-                $images[] = asset('storage/' . $path);
-            }
-            $data['images'] = $images;
-            $data['main_image'] = $images[0] ?? null;
+            $data['images'] = $this->storeUploadedImages($request->file('images'));
+            $data['main_image'] = $data['images'][0] ?? null;
+        } elseif ($request->has('existing_images')) {
+            // Conserver uniquement les images encore référencées (cas reorder/delete partiels)
+            $kept = (array) $request->input('existing_images');
+            $removed = array_values(array_diff($property->images ?? [], $kept));
+            $this->deleteStoredImages($removed);
+            $data['images'] = $kept;
+            $data['main_image'] = $kept[0] ?? null;
+        }
+
+        // Transition draft -> published
+        if (isset($data['status']) && $data['status'] === 'published' && $property->status !== 'published') {
+            $data['published_at'] = now();
         }
 
         $property->update($data);
@@ -455,8 +460,13 @@ class PropertyController extends Controller
             'construction_year' => ['nullable', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
             'features' => ['nullable', 'array'],
             'features.*' => ['string'],
-            'images' => [$isUpdate ? 'nullable' : 'required', 'array', 'min:1', 'max:20'],
-            'images.*' => ['image', 'max:5120'], // 5MB max
+            // 'images' peut être : un tableau de fichiers uploadés OU absent (on garde anciennes).
+            // En création, on autorise aussi le passage d'URLs déjà uploadées (existing_images).
+            'images' => ['nullable', 'array', 'max:20'],
+            'images.*' => ['file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'], // 5MB max
+            'existing_images' => ['nullable', 'array'],
+            'existing_images.*' => ['string', 'url'],
+            'status' => ['nullable', 'in:draft,published,sold,rented,archived'],
             'video_url' => ['nullable', 'url'],
             'virtual_tour_url' => ['nullable', 'url'],
             'address' => [$isUpdate ? 'sometimes' : 'required', 'string'],
@@ -545,5 +555,57 @@ class PropertyController extends Controller
         $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
 
         return round($earthRadius * $c, 2);
+    }
+
+    /**
+     * Upload + stockage cloud-ready (disk configurable via env IMMO_UPLOAD_DISK).
+     * Disk supportés : public (local), s3, do_spaces, etc.
+     * Retourne un tableau d'URLs publiques.
+     */
+    private function storeUploadedImages(array $files): array
+    {
+        $disk = env('IMMO_UPLOAD_DISK', 'public');
+        $urls = [];
+
+        foreach ($files as $file) {
+            if (!$file->isValid()) {
+                continue;
+            }
+            $path = $file->store('properties', $disk);
+
+            // Si le driver expose une URL publique (s3, gcs), utilisez-la
+            try {
+                $url = \Illuminate\Support\Facades\Storage::disk($disk)->url($path);
+                // Fallback si l'URL retournée est relative (cas local)
+                if (!preg_match('#^https?://#i', $url)) {
+                    $url = asset('storage/' . ltrim(str_replace('public/', '', $path), '/'));
+                }
+            } catch (\Throwable $e) {
+                $url = asset('storage/' . ltrim($path, '/'));
+            }
+            $urls[] = $url;
+        }
+
+        return $urls;
+    }
+
+    /**
+     * Supprime les fichiers physiquement (best-effort) à partir des URLs.
+     */
+    private function deleteStoredImages(array $urls): void
+    {
+        $disk = env('IMMO_UPLOAD_DISK', 'public');
+        foreach ($urls as $url) {
+            try {
+                // Extraire le chemin relatif à partir de l'URL
+                $parsed = parse_url((string) $url, PHP_URL_PATH) ?? '';
+                $rel = ltrim(preg_replace('#^/storage/#', '', $parsed), '/');
+                if ($rel && \Illuminate\Support\Facades\Storage::disk($disk)->exists($rel)) {
+                    \Illuminate\Support\Facades\Storage::disk($disk)->delete($rel);
+                }
+            } catch (\Throwable $e) {
+                // ignore — best effort
+            }
+        }
     }
 }
