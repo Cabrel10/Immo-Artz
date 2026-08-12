@@ -186,6 +186,9 @@ class PropertyController extends Controller
         if ($request->hasFile('images')) {
             $data['images'] = $this->storeUploadedImages($request->file('images'));
             $data['main_image'] = $data['images'][0] ?? null;
+        } else {
+            // La colonne images est NOT NULL (JSON) : tableau vide par défaut.
+            $data['images'] = [];
         }
 
         // Statut par défaut : draft. L'agent doit explicitement publier.

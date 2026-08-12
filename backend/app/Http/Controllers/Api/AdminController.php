@@ -214,7 +214,6 @@ class AdminController extends Controller
             'data' => $stats,
         ]);
     }
-}
 
     /**
      * Liste tous les utilisateurs (Admin)

@@ -1,0 +1,13 @@
+0 verbose cli /usr/bin/node /usr/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@10.8.2
+2 info using node@v20.20.2
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/ubuntu/webapp/MORNINGSTAR/Immo-Artz/frontend/.npmrc
+5 warn config production Use `--omit=dev` instead.
+6 silly config load:file:/home/ubuntu/.npmrc
+7 silly config load:file:/usr/etc/npmrc
+8 verbose title npm exec vite preview --host 0.0.0.0 --port 8092
+9 verbose argv "exec" "--" "vite" "preview" "--host" "0.0.0.0" "--port" "8092"
+10 verbose logfile logs-max:10 dir:/home/ubuntu/webapp/MORNINGSTAR/Immo-Artz/frontend/$APPDATA/npm-cache/_logs/2026-08-09T20_11_04_996Z-
+11 verbose logfile /home/ubuntu/webapp/MORNINGSTAR/Immo-Artz/frontend/$APPDATA/npm-cache/_logs/2026-08-09T20_11_04_996Z-debug-0.log
+12 silly logfile done cleaning log files

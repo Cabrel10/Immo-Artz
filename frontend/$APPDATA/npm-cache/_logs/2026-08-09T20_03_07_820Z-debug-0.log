@@ -1,0 +1,25 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@10.8.2
+2 info using node@v20.20.2
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/ubuntu/webapp/MORNINGSTAR/Immo-Artz/frontend/.npmrc
+5 warn config production Use `--omit=dev` instead.
+6 silly config load:file:/home/ubuntu/.npmrc
+7 silly config load:file:/usr/etc/npmrc
+8 verbose title npm run build
+9 verbose argv "run" "build"
+10 verbose logfile logs-max:10 dir:/home/ubuntu/webapp/MORNINGSTAR/Immo-Artz/frontend/$APPDATA/npm-cache/_logs/2026-08-09T20_03_07_820Z-
+11 verbose logfile /home/ubuntu/webapp/MORNINGSTAR/Immo-Artz/frontend/$APPDATA/npm-cache/_logs/2026-08-09T20_03_07_820Z-debug-0.log
+12 silly logfile done cleaning log files
+13 http fetch GET 200 https://registry.npmjs.org/npm 571ms
+14 verbose cwd /home/ubuntu/webapp/MORNINGSTAR/Immo-Artz/frontend
+15 verbose os Linux 7.0.0-27-generic
+16 verbose node v20.20.2
+17 verbose npm  v10.8.2
+18 notice
+18 notice New major version of npm available! 10.8.2 -> 12.0.2
+18 notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+18 notice To update run: npm install -g npm@12.0.2
+18 notice  { force: true, [Symbol(proc-log.meta)]: true }
+19 verbose exit 0
+20 info ok
