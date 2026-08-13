@@ -12,10 +12,10 @@ import { useTheme } from '@/hooks/useTheme'
 
 function App() {
   const { user, isAuthenticated, logout } = useAuth()
-  const { resolvedTheme } = useTheme()
+  const { isDark } = useTheme()
 
   return (
-    <div className={resolvedTheme}>
+    <div className={isDark ? 'dark' : ''}>
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Header 
           user={user} 

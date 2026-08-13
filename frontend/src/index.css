@@ -56,8 +56,11 @@
   
   html {
     scroll-behavior: smooth;
+    /* Le fond suit --background : comme la classe .dark est sur <html>,
+       le fond de page change instantanément au basculement de thème. */
+    @apply bg-background;
   }
-  
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
