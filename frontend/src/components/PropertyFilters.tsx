@@ -2,7 +2,7 @@ import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
-import { PROPERTY_TYPES, PROPERTY_STANDINGS, TRANSACTION_TYPES } from '@/types'
+import { PROPERTY_TYPE_FILTERS, PROPERTY_STANDINGS, TRANSACTION_TYPES } from '@/types'
 import type { PropertyFilters as Filters } from '@/types'
 
 interface PropertyFiltersProps {
@@ -16,7 +16,7 @@ export function PropertyFilters({ filters, onChange, onReset }: PropertyFiltersP
     v !== undefined && v !== null && v !== ''
   )
 
-  const typeOptions = Object.entries(PROPERTY_TYPES).map(([value, label]) => ({ value, label }))
+  const typeOptions = Object.entries(PROPERTY_TYPE_FILTERS).map(([value, label]) => ({ value, label }))
   const standingOptions = Object.entries(PROPERTY_STANDINGS).map(([value, label]) => ({ value, label }))
   const transactionOptions = Object.entries(TRANSACTION_TYPES).map(([value, label]) => ({ value, label }))
   

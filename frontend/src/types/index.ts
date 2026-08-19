@@ -37,6 +37,8 @@ export interface RegisterData {
 
 // Types propriété
 export type PropertyType = 'apartment' | 'house' | 'villa' | 'land' | 'commercial' | 'office' | 'car' | 'suv' | 'truck' | 'motorcycle';
+// Filtre spécial côté frontend : 'furnished' n'est pas un type DB, c'est le flag is_furnished
+export type PropertyTypeFilter = PropertyType | 'furnished';
 export type PropertyStanding = 'standard' | 'moyen' | 'haut_de_gamme';
 export type TransactionType = 'sale' | 'rent';
 export type PropertyStatus = 'draft' | 'published' | 'sold' | 'rented' | 'archived';
@@ -63,6 +65,7 @@ export interface Property {
   floor?: number;
   total_floors?: number;
   construction_year?: number;
+  is_furnished?: boolean;
   features?: string[];
   images: string[];
   main_image?: string;
@@ -95,7 +98,7 @@ export interface AgentInfo {
 }
 
 export interface PropertyFilters {
-  type?: PropertyType;
+  type?: PropertyTypeFilter;
   standing?: PropertyStanding;
   transaction_type?: TransactionType;
   city?: string;
@@ -156,6 +159,51 @@ export interface CatalogAccess {
   uses_remaining: number;
 }
 
+export interface CatalogPurchase {
+  password: string;
+  valid_from: string;
+  valid_until: string;
+  time_remaining: string;
+  uses_remaining: number;
+  price: number;
+  currency: string;
+}
+
+export interface CatalogPasswordInfo {
+  password: string;
+  valid_from: string;
+  valid_until: string;
+  time_remaining?: string;
+  uses_remaining: number;
+  current_uses?: number;
+  max_uses?: number;
+}
+
+export interface CatalogPasswordHistoryItem extends CatalogPasswordInfo {
+  id: number;
+  is_active: boolean;
+  is_valid: boolean;
+  created_at: string;
+}
+
+export interface Agent {
+  id: number;
+  name: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  phone?: string;
+  agency?: string;
+  avatar?: string;
+  rating: number;
+  rating_count: number;
+  properties_count: number;
+  bio?: string;
+  license_number?: string;
+  status?: 'active' | 'inactive' | 'suspended';
+  created_at?: string;
+}
+
 // Types API
 export interface ApiResponse<T> {
   success: boolean;
@@ -201,6 +249,12 @@ export const PROPERTY_TYPES: Record<PropertyType, string> = {
   suv: 'SUV/4x4',
   truck: 'Camion',
   motorcycle: 'Moto',
+};
+
+// Types exposés dans les filtres (inclut la catégorie Meublé)
+export const PROPERTY_TYPE_FILTERS: Record<PropertyTypeFilter, string> = {
+  ...PROPERTY_TYPES,
+  furnished: 'Meublé',
 };
 
 export const PROPERTY_STANDINGS: Record<PropertyStanding, string> = {

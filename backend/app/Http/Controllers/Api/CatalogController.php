@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CatalogAccessLog;
 use App\Models\CatalogPassword;
+use App\Models\Payment;
 use App\Models\Property;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
@@ -329,6 +330,65 @@ class CatalogController extends Controller
             'success' => true,
             'data' => $stats,
         ]);
+    }
+
+    /**
+     * Achat d'un accès catalogue : crée le paiement et délivre le mot de passe au client.
+     * Sans passerelle MTN/Orange intégrée, le paiement est enregistré en mode "manual"
+     * (à remplacer par un callback provider quand la passerelle sera branchée) et le
+     * mot de passe est retourné immédiatement pour que le client le voie à l'écran.
+     */
+    public function purchase(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'payment_method' => ['required', 'string', 'in:mtn_money,orange_money,card'],
+            'phone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Méthode de paiement invalide.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $user = $request->user(); // null si achat invité (route publique)
+
+        // Crée un mot de passe dédié à cet achat (12h, 100 utilisations)
+        $catalogPassword = CatalogPassword::createNew();
+
+        Payment::create([
+            'user_id' => $user?->id,
+            'transaction_id' => Payment::generateTransactionId(),
+            'type' => 'catalog_access',
+            'payable_type' => CatalogPassword::class,
+            'payable_id' => $catalogPassword->id,
+            'amount' => $catalogPassword->price,
+            'currency' => $catalogPassword->currency,
+            'status' => 'completed',
+            'payment_method' => $request->payment_method,
+            'payment_provider' => 'manual',
+            'paid_at' => now(),
+            'metadata' => [
+                'phone' => $request->phone,
+                'note' => 'Paiement manuel — en attente d\'intégration passerelle locale.',
+            ],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Paiement enregistré. Voici votre mot de passe catalogue.',
+            'data' => [
+                'password' => $catalogPassword->password,
+                'valid_from' => $catalogPassword->valid_from->toIso8601String(),
+                'valid_until' => $catalogPassword->valid_until->toIso8601String(),
+                'time_remaining' => $catalogPassword->time_remaining,
+                'uses_remaining' => $catalogPassword->uses_remaining,
+                'price' => (float) $catalogPassword->price,
+                'currency' => $catalogPassword->currency,
+            ],
+        ], 201);
     }
 
     // ==================== MÉTHODES PRIVÉES ====================

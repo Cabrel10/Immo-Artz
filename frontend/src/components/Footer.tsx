@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Building2, Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
+import { Building2, Mail, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -104,12 +104,6 @@ export function Footer() {
                   Boulevard de la Liberté<br />
                   Douala, Cameroun
                 </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-immo-500 flex-shrink-0" />
-                <a href="tel:+237600000000" className="text-sm text-gray-400 hover:text-white transition-colors">
-                  +237 6XX XXX XXX
-                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-immo-500 flex-shrink-0" />

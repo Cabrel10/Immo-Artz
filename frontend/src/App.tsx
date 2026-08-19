@@ -7,6 +7,11 @@ import { PropertyDetailPage } from '@/pages/PropertyDetailPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { CatalogPage } from '@/pages/CatalogPage'
+import { AdminPage } from '@/pages/AdminPage'
+import { AgentsPage } from '@/pages/AgentsPage'
+import { AgentDashboardPage } from '@/pages/AgentDashboardPage'
+import { FavoritesPage } from '@/pages/FavoritesPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
 
@@ -31,6 +36,11 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/agents" element={<AgentsPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/agent/dashboard" element={<AgentDashboardPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             
             {/* Fallback route */}
             <Route path="*" element={

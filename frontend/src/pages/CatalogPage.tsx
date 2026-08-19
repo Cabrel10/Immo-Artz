@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Lock, Unlock, Download, Eye, Clock, Users, AlertCircle, CheckCircle } from 'lucide-react'
+import { Lock, Unlock, Download, Eye, Clock, Users, AlertCircle, CheckCircle, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/ui/Modal'
 import { catalogService } from '@/services/api'
-import type { CatalogAccess } from '@/types'
+import type { CatalogAccess, CatalogPurchase } from '@/types'
 
 export function CatalogPage() {
   const [password, setPassword] = useState('')
@@ -12,6 +12,11 @@ export function CatalogPage() {
   const [access, setAccess] = useState<CatalogAccess | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null)
+  const [paymentPhone, setPaymentPhone] = useState('')
+  const [isPurchasing, setIsPurchasing] = useState(false)
+  const [purchase, setPurchase] = useState<CatalogPurchase | null>(null)
+  const [passwordCopied, setPasswordCopied] = useState(false)
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,6 +38,43 @@ export function CatalogPage() {
       }
     } finally {
       setIsVerifying(false)
+    }
+  }
+
+  const handlePurchase = async () => {
+    if (!paymentMethod) return
+    setError(null)
+    setIsPurchasing(true)
+    try {
+      const response = await catalogService.purchase(paymentMethod, paymentPhone || undefined)
+      if (response.data.success && response.data.data) {
+        const data = response.data.data as CatalogPurchase
+        setPurchase(data)
+        // Connecte directement l'utilisateur avec son nouveau mot de passe
+        setPassword(data.password)
+        setAccess({
+          valid_until: data.valid_until,
+          time_remaining: data.time_remaining ?? '',
+          uses_remaining: data.uses_remaining,
+        })
+        setShowPaymentModal(false)
+      } else {
+        setError(response.data.message || 'Erreur lors de l\'achat')
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Erreur lors de l\'achat')
+    } finally {
+      setIsPurchasing(false)
+    }
+  }
+
+  const handleCopyPassword = async (pwd: string) => {
+    try {
+      await navigator.clipboard.writeText(pwd)
+      setPasswordCopied(true)
+      setTimeout(() => setPasswordCopied(false), 2000)
+    } catch {
+      // presse-papiers indisponible — le MDP reste visible à l'écran
     }
   }
 
@@ -166,6 +208,26 @@ export function CatalogPage() {
               </p>
             </div>
 
+            {purchase && (
+              <div className="mb-8 p-5 rounded-xl bg-gold-50 dark:bg-gold-900/20 border border-gold-300 dark:border-gold-700">
+                <p className="text-sm font-medium text-gold-800 dark:text-gold-300 mb-2">
+                  Votre mot de passe catalogue — notez-le, il est valable 12h :
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <code className="text-3xl font-mono font-bold tracking-[0.3em] text-gray-900 dark:text-white">
+                    {purchase.password}
+                  </code>
+                  <Button size="sm" variant="ghost" onClick={() => handleCopyPassword(purchase.password)}
+                    title="Copier le mot de passe">
+                    {passwordCopied ? <CheckCircle className="h-5 w-5 text-green-600" /> : <Copy className="h-5 w-5" />}
+                  </Button>
+                </div>
+                <p className="mt-2 text-xs text-gold-700 dark:text-gold-400">
+                  Conservez-le précieusement : il ne sera plus affiché après fermeture de cette page.
+                </p>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg text-center">
                 <Clock className="h-6 w-6 mx-auto mb-2 text-immo-600" />
@@ -251,28 +313,57 @@ export function CatalogPage() {
         title="Paiement"
         description="Choisissez votre méthode de paiement"
         footer={
-          <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
-            Annuler
-          </Button>
+          <div className="flex gap-3 justify-end">
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+              Annuler
+            </Button>
+            <Button
+              onClick={handlePurchase}
+              disabled={!paymentMethod}
+              isLoading={isPurchasing}
+            >
+              Confirmer — 2 000 FCFA
+            </Button>
+          </div>
         }
       >
         <div className="space-y-4">
           <p className="text-gray-600 dark:text-gray-400">
-            Le paiement sera implémenté avec l'intégration de :
+            Choisissez votre méthode de paiement. Votre mot de passe (12h de validité) s'affichera immédiatement après confirmation.
           </p>
-          <ul className="space-y-2">
-            <li className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-              <span className="font-medium">MTN Mobile Money</span>
-            </li>
-            <li className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-              <span className="font-medium">Orange Money</span>
-            </li>
-            <li className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
-              <span className="font-medium">Carte bancaire</span>
-            </li>
-          </ul>
+          <div className="space-y-2">
+            {[
+              { id: 'mtn_money', label: 'MTN Mobile Money' },
+              { id: 'orange_money', label: 'Orange Money' },
+              { id: 'card', label: 'Carte bancaire' },
+            ].map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setPaymentMethod(m.id)}
+                className={`w-full flex items-center gap-2 p-3 rounded-lg border text-left transition-colors ${
+                  paymentMethod === m.id
+                    ? 'border-immo-600 bg-immo-50 dark:bg-immo-900/30 font-medium'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-immo-400'
+                }`}
+              >
+                <span className={`h-4 w-4 rounded-full border-2 ${
+                  paymentMethod === m.id ? 'border-immo-600 bg-immo-600' : 'border-gray-300'
+                }`} />
+                {m.label}
+              </button>
+            ))}
+          </div>
+          {(paymentMethod === 'mtn_money' || paymentMethod === 'orange_money') && (
+            <Input
+              label="Numéro Mobile Money"
+              placeholder="6XX XX XX XX"
+              value={paymentPhone}
+              onChange={(e) => setPaymentPhone(e.target.value)}
+            />
+          )}
           <p className="text-sm text-gray-500">
-            Cette fonctionnalité nécessite l'intégration d'une passerelle de paiement locale.
+            Montant : 2 000 FCFA — accès 12h. Passerelle de paiement en cours d'intégration ; votre accès est délivré immédiatement.
           </p>
         </div>
       </Modal>

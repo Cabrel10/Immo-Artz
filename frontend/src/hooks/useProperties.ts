@@ -27,6 +27,11 @@ export function useProperties(initialFilters?: PropertyFilters) {
       
       Object.entries(currentFilters).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== '') {
+          // Catégorie "Meublé" : pas un type DB, on route vers le flag is_furnished
+          if (key === 'type' && value === 'furnished') {
+            params.append('furnished', '1')
+            return
+          }
           if (Array.isArray(value)) {
             value.forEach(v => params.append(`${key}[]`, v))
           } else {

@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CatalogController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\PropertyController;
 use App\Http\Controllers\Api\RatingController;
 use App\Http\Controllers\Api\SocialAuthController;
@@ -25,6 +27,10 @@ Route::get('/auth/google', [SocialAuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [SocialAuthController::class, 'handleGoogleCallback']);
 Route::post('/auth/google/token', [SocialAuthController::class, 'loginWithGoogleToken']);
 
+// Agents (lecture publique)
+Route::get('/agents', [AgentController::class, 'index']);
+Route::get('/agents/{id}', [AgentController::class, 'show']);
+
 // Propriétés (lecture publique)
 Route::get('/properties', [PropertyController::class, 'index']);
 Route::get('/properties/featured', [PropertyController::class, 'featured']);
@@ -38,6 +44,7 @@ Route::post('/ratings', [RatingController::class, 'store']);
 
 // Catalogue (avec vérification mot de passe)
 Route::post('/catalog/verify', [CatalogController::class, 'verify']);
+Route::post('/catalog/purchase', [CatalogController::class, 'purchase']);
 Route::get('/catalog/download', [CatalogController::class, 'download']);
 Route::get('/catalog', [CatalogController::class, 'show']);
 
@@ -63,6 +70,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/properties/{id}', [PropertyController::class, 'destroy']);
     Route::get('/my-properties', [PropertyController::class, 'myProperties']);
 
+    // Favoris
+    Route::get('/favorites', [FavoriteController::class, 'index']);
+    Route::get('/favorites/ids', [FavoriteController::class, 'ids']);
+    Route::post('/favorites/{propertyId}/toggle', [FavoriteController::class, 'toggle']);
+
     // ==================== ROUTES ADMIN ====================
     
     Route::middleware(['role:admin'])->group(function () {
@@ -87,6 +99,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/admin/properties/{id}/featured', [AdminController::class, 'toggleFeatured']);
         Route::post('/admin/properties/featured/order', [AdminController::class, 'setFeaturedOrder']);
         Route::get('/admin/dashboard', [AdminController::class, 'dashboardStats']);
+
+        // Gestion des agents (Admin)
+        Route::get('/admin/agents', [AgentController::class, 'adminIndex']);
+        Route::put('/admin/agents/{id}/status', [AgentController::class, 'updateStatus']);
     });
 });
 

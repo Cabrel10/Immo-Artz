@@ -55,6 +55,9 @@ class PropertyController extends Controller
         if ($request->has('bedrooms')) {
             $query->where('bedrooms', '>=', $request->bedrooms);
         }
+        if ($request->has('furnished')) {
+            $query->where('is_furnished', $request->boolean('furnished'));
+        }
 
         if ($request->has('features')) {
             $features = is_array($request->features) ? $request->features : explode(',', $request->features);
@@ -453,6 +456,7 @@ class PropertyController extends Controller
             'floor' => ['nullable', 'integer', 'min:0'],
             'total_floors' => ['nullable', 'integer', 'min:0'],
             'construction_year' => ['nullable', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+            'is_furnished' => ['nullable', 'boolean'],
             'features' => ['nullable', 'array'],
             'features.*' => ['string'],
             'images' => [$isUpdate ? 'nullable' : 'required', 'array', 'min:1', 'max:20'],
@@ -496,6 +500,7 @@ class PropertyController extends Controller
             'floor' => $property->floor,
             'total_floors' => $property->total_floors,
             'construction_year' => $property->construction_year,
+            'is_furnished' => (bool) $property->is_furnished,
             'features' => $property->features,
             'main_image' => $property->main_image_url,
             'images' => $property->images,

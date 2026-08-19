@@ -88,6 +88,9 @@ export const propertyService = {
 export const catalogService = {
   verifyPassword: (password: string) =>
     api.post('/catalog/verify', { password }),
+
+  purchase: (payment_method: string, phone?: string) =>
+    api.post('/catalog/purchase', { payment_method, phone }),
   
   getCatalog: (password: string) =>
     api.get('/catalog', { params: { password } }),
@@ -130,4 +133,46 @@ export const ratingService = {
   
   reject: (id: number | string) =>
     api.post(`/ratings/${id}/reject`),
+}
+
+// Service des agents (public + admin)
+export const agentService = {
+  getAll: (params?: any) =>
+    api.get('/agents', { params }),
+
+  getById: (id: number | string) =>
+    api.get(`/agents/${id}`),
+
+  adminGetAll: (params?: any) =>
+    api.get('/admin/agents', { params }),
+
+  adminUpdateStatus: (id: number | string, status: string) =>
+    api.put(`/admin/agents/${id}/status`, { status }),
+}
+
+// Service des favoris
+export const favoriteService = {
+  getAll: () =>
+    api.get('/favorites'),
+
+  getIds: () =>
+    api.get('/favorites/ids'),
+
+  toggle: (propertyId: number | string) =>
+    api.post(`/favorites/${propertyId}/toggle`),
+}
+
+// Service d'administration
+export const adminService = {
+  getDashboard: () =>
+    api.get('/admin/dashboard'),
+
+  getProperties: (params?: any) =>
+    api.get('/admin/properties', { params }),
+
+  toggleFeatured: (id: number | string, is_featured: boolean, featured_until?: string) =>
+    api.post(`/admin/properties/${id}/featured`, { is_featured, featured_until }),
+
+  getPropertiesStats: () =>
+    api.get('/stats/properties'),
 }

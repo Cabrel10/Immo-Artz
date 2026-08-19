@@ -28,6 +28,7 @@ class Property extends Model
         'floor',
         'total_floors',
         'construction_year',
+        'is_furnished',
         'features',
         'images',
         'main_image',
@@ -57,6 +58,7 @@ class Property extends Model
         'longitude' => 'decimal:8',
         'is_featured' => 'boolean',
         'is_premium' => 'boolean',
+        'is_furnished' => 'boolean',
         'published_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
